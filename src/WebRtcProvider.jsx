@@ -15,6 +15,39 @@ const WebRtcContext = createContext(null);
  * @param {Object.<string, Object.<string, function[]>[]} props.channelListeners Map of
  *   WebRTC channel "rooms" to which to connect, and their map of event listeners
  *  (eventClass names to Array of callback functions)
+ *
+ * Example:
+ *
+ * Define eventListeners, ideally in their own file to stay organized:
+ * ```
+ * // eventListeners.jsx
+ * const eventListeners = {
+ *  'MY_APP.MY_EVENT': (channel, evt) => {console.log('Got an event:', evt);}
+ * }
+ *
+ * export default eventListeners;
+ * ```
+ *
+ * Then in your main function, wrap your whole React app in a WebRtcProvider:
+ *
+ *
+ * ```
+ * // main.jsx
+ * import ReactDOM from 'react-dom/client';
+ * import App from './App';
+ * import eventListeners from './eventListeners';
+ *
+ * ReactDOM.createRoot(document.getElementById('root')).render(
+ *    <WebRtcProvider
+ *        clientName='MY_APP'
+ *        serverUrl='http://example.com'
+ *        serverPath='/'
+ *        channelListeners={{ 'my-channel' : eventListeners }}
+ *    >
+ *      <App>
+ *    </WebRtcProvider>
+ * );
+ * ```
  */
 function WebRtcProvider({ clientName, serverUrl, serverPath, channelListeners, children }) {
   const [currentChannels, setCurrentChannels] = useState(getChannels());

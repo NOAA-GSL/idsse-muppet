@@ -26,7 +26,7 @@ const getChannels = () => channelMap;
 /**
  * Getter function to lookup WebRtcChannel connection, identified by the room name, from
  * the locally created/saved connections (utility when not in a React component tree).
- * Wherever posssible, React custom Hook ```useMuppetChannels()``` should be used instead of this.
+ * Wherever posssible, React custom Hook ```useMuppetChannel()``` should be used instead of this.
  *
  * @param {string} channelName WebRTC room to query for channel name from stored channels in memory
  * @returns {WebRtcChannel | null} the matching WebRtcChannel object, or null if not found/not initialized

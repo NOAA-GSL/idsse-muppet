@@ -1,13 +1,15 @@
-import { WebRtcProvider } from './src/WebRtcProvider';
-import useMuppetChannels from './src/useMuppetChannels';
 import WebRtcChannel from './src/WebRtcChannel';
-import { getChannel, getChannels, createWebRtcChannels } from './src/channels';
+import { WebRtcProvider } from './src/WebRtcProvider';
+import { createWebRtcChannels, getChannel, getChannels } from './src/channels';
+import useMuppetChannel from './src/useMuppetChannel';
+import useMuppetChannels from './src/useMuppetChannels';
 
 export {
-  WebRtcProvider,
-  useMuppetChannels,
   WebRtcChannel,
+  WebRtcProvider,
+  createWebRtcChannels,
   getChannel,
   getChannels,
-  createWebRtcChannels,
+  useMuppetChannel,
+  useMuppetChannels,
 };

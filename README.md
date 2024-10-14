@@ -13,11 +13,10 @@ React Javascript library to connect to WebRTC data channels, and send/receive me
     - [Initialize a new WebRTC channel](#initialize-a-new-webrtc-channel)
       - [React (recommended)](#react-recommended)
       - [Vanilla Javascript](#vanilla-javascript)
-    - [Send and Receive Messages](#send-and-receive-messages)
-      - [Receive messages](#receive-messages)
-      - [Broadcast a message](#broadcast-a-message)
-      - [Send an RPC message](#send-an-rpc-message)
-    - [Connect to other clients](#connect-to-other-clients)
+    - [Send and Receive Events](#send-and-receive-events)
+      - [Receive events](#receive-events)
+      - [Broadcast an event](#broadcast-an-event)
+      - [Send an RPC request](#send-an-rpc-request)
   - [Contributing](#contributing)
     - [Publishing](#publishing)
 
@@ -56,35 +55,94 @@ Now you can use the IDSSe WebRTC library to create new connections to a WebRTC c
 ### Initialize a new WebRTC channel
 
 #### React (recommended)
-TODO
+First create a Javascript object mapping some MUPPET eventClasses that you expect to receive to a callback function. This can be stored in its own file, like `eventListeners.js`, for organization:
+
+```javascript
+// eventListeners.js
+const eventListeners = {
+  'THEIR_APP.BUTTON_CLICKED': (channel, event) => {
+    console.log('Received a button click event:', event);
+  },
+  'THEIR_APP.USER_LOGIN': (channel, event) => {
+    console.log('User logged in:', event);
+  }
+};
+
+export default eventListeners;
+```
+
+Now in your `main.jsx` file, add a `<WebRtcProvider>` component wrapping your main React app component. Pass the Provider an object `channelListeners`, where the key is the WebRTC room on the server you wish to connect to, and the value is your object of eventListener callbacks we just defined.
+
+```javascript
+// main.jsx
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import eventListeners from './eventListeners';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <WebRtcProvider
+    clientName='MY_APP'
+    serverUrl='http://example.com'
+    serverPath='/'
+    channelListeners={{ 'my-channel' : eventListeners }}
+  >
+    <App>
+  </WebRtcProvider>
+);
+```
+
+The WebRTC room that you pass can be any string, but this is how the other client you are connecting to will find your app so the 2 apps can negotiate their peer-to-peer connection.  Any other WebRTC client that joins this room on the server will also attempt to make a peer-to-peer websocket connection to your client. You can pass any number of channel-to-channel-listener Object elements to `channelListeners`, which will attempt to connect to all the channels you listed.
+
+This Provider now stores an app-wide React Context for you, so any components in your app can reuse the same persistant `WebRtcChannel` by just calling the `useMuppetChannel()` React hook with the channel name passed to `channelListeners` above.
+
+```javascript
+// MyComponent.jsx
+import useMuppetChannel from '@noaa-gsl/idsse-webrtc-client';
+
+function MyComponent () {
+  const channel = useMuppetChannel('my-channel');
+
+  const onButtonClick = () => {
+    channel.sendEvent({
+      eventClass: 'MY_APP.SOME_EVENT',
+      event: { value: 123 }
+    });
+  };
+
+  return (
+    <button onClick={onButtonClick}>
+      Hello world
+    </button>
+  );
+}
+
+export default MyComponent;
+```
+
+ Note the component must know the "channel name" that was given to `WebRtcProvider`, so it can reference the `WebRtcChannel` object it wants to use, as multiple channels can be stored in WebRtcProvider. In the example above, the exact channel name is `my-channel`, but if a non-existent channel was requested by the component, the `useMuppetChannel()` hook would return `undefined`.
 
 #### Vanilla Javascript
-You can create a WebRtcChannel instance manually, outside of any React context.
+You can also create a WebRtcChannel instance manually, outside of any React context.
 
 Example:
 ```javascript
 const channel = new WebRtcChannel({
     clientName: 'MY_APP',
-    room: 'some-room-on-webrtc-server',
+    room: 'some-room-on-the-server',
     serverUrl: 'http://example.com',
     serverPath: '/',
 });
 ```
 
-The WebRTC room that you can be any string, but this is how the other client you are connecting to will find your app so the 2 apps can negotiate their peer-to-peer connection.  Any other WebRTC client that joins this room on the server will attempt to make a peer-to-peer websocket connection to your client.
-
-> For reliability, it's recommended that this room is unique to your session/browser ("my-room-abc123", for example, instead of just "my-room"). Consider establishing with the app you're integrating with some shared nonce or algorithm to generate a new room for each new user session, so user A using your app will not have problems with user B's click actions taking effect in their session.
+> For reliability, it's recommended that this room is unique to your session/browser ("my-room-abc123", for example, instead of just "my-room"). Consider establishing with the app that your integrating some shared nonce or algorithm to generate a new room for each new user session, so user A using your app will not have problems with user B's click actions taking effect in their session.
+>
+> If you're using the React approach, `WebRtcProvider` handles this for you by generating a "fingerprint" unique to this browser user and prepending it to the WebRTC room you passed before attempting to connect, e.g. `4zd9jp:some-room-on-the-server`. Other apps running on this browser that use this library will generate the same nonce, and so find each other on the WebRTC server.
 
 TODO: decide on some algorithm or method to share WebRTC room names before connection.
 
 TODO: security recommendations
 
-### Send and Receive Messages
-
-Since WebRTC itself has no rules or conventions on how data sent over channels should be organized, the [Modern UI Peer-to-Peer Events (MUPPET) protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing) defines a consistent JSON structure for messaging, so you can effectively share your Javascript app's user events over WebRTC with another app.
-
-#### Receive messages
-Once you instantiated a new `WebRtcChannel`, you can use this channel connection to wire up event listeners to run a callback when your channel receives a specific eventClass, using `WebRtcChannel.on()`.
+Once you instantiated a new `WebRtcChannel`, you can use this channel connection to wire up event listeners to run callbacks when your channel receives a specific eventClass, using `WebRtcChannel.on()`.
 
 Example:
 ```javascript
@@ -97,12 +155,55 @@ channel.on('THEIR_APP.WEATHER_FIELD_CHANGED', (receivingChannel, evt) => {
     );
 });
 ```
+
+After you've established all the event listeners you want, you have to tell your `WebRtcChannel` to join the WebRTC server and find other clients waiting to connect.
+
+```javascript
+await channel.connect();
+```
+
+Although your app is now waiting in the WebRTC server room, you don't know that your peer-to-peer socket has yet been established with another app; that depends on the other app to negotiate a websocket with yours.
+
+You can inspect if your channel is live and receiving events from another client with `isOpen()` or `state`:
+
+```javascript
+if (channel.isOpen()) {
+  console.log('Ready to send messages over WebRTC!')
+}
+```
+
+It's recommended that you set up all event listeners (see "Receive events" section below) before connecting, as events could begin to flow immediately after the WebRtcChannel connects successfully, and if your event listener is not setup beforehand you may miss those events. At this time there is no replay of events.
+
+> Note: if you or another WebRTC client attempts to send events over a channel before a 2nd client is connected, the events will be temporarily held in an in-memory queue in the sender's app (will not disappear).
+>
+> As soon as both apps have connected to the same WebRtcChannel, all of these pending events will be "replayed"--sent over the channel--so the receiver can receive them.
+
+All of this event listener setup and connection is handled for you if you're using the React `WebRtcProvider`. You merely have to look at `isOpen()`, and if it's `true`, you know the app on the other side has connected to yours.
+
+### Send and Receive Events
+
+Since WebRTC itself has no rules or conventions on how data sent over channels should be organized, the [Modern UI Peer-to-Peer Events (MUPPET) protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing) defines a consistent JSON structure for messaging, so you can effectively share your Javascript app's user events over WebRTC with another app.
+
+#### Receive events
+If you created a React `WebRtcProvider` from above, you already passed `channelListeners` to it, which automatically subscribed your message callbacks to their events. Your callbacks will be invoked when that specific eventClass is received over the WebRtc channel.
+
+If you manually instantiated a new `WebRtcChannel` (not using `WebRtcProvider`), you have to manually wire up event listeners to callbacks using `WebRtcChannel.on()`:
+```javascript
+channel.on('THEIR_APP.WEATHER_FIELD_CHANGED', (receivingChannel, evt) => {
+    // the attributes inside the event are completely up to the sender;
+    // ideally this structure was declared in a SCHEMAS event prior
+    const { field, issueDt } = evt;
+    console.log(
+        `Weather field ${field} with issue ${issueDt} was selected`
+    );
+});
+```
 > Note: you will need to coordinate with the app you're integrating with to determine the eventClass constants that it plans to send you. According to MUPPET conventions, it should be declared in a `SCHEMAS` eventClass message that the other app sends you immediately after you both connect.
 
-#### Broadcast a message
-To broadcast a MUPPET message over your new WebRtcChannel, simply pass your MUPPET event to `WebRtcChannel.sendEvent()`.
+#### Broadcast an event
+To broadcast a MUPPET event over your new WebRtcChannel, simply pass your MUPPET eventClass and event to `WebRtcChannel.sendEvent()`.
 
-This can (and generally should) be invoked right in the `onClick` callback of some Button, or an `onSelect` of an HTML Select element, for example.
+This can (and generally should) be invoked right in the HTML/Javascript element where the user took action. For example, the `onClick` callback of some button, or an `onSelect` of an HTML select element.
 
 Example:
 ```javascript
@@ -121,10 +222,10 @@ const channel = new WebRtcChannel(/* <params> */);
 </button>
 ```
 
-#### Send an RPC message
-To send a MUPPET message that is expected to receive some response from the receiver, call `WebRtcChannel.sendRequest()`.
+#### Send an RPC request
+To send a MUPPET event that is expected to receive some response from the receiver, call `WebRtcChannel.sendRequest()`, passing the eventClass, event body, and the destination (the name of the app that should respond to the event).
 
-This method call is intended to imitate the standard `fetch()` Javascript API, where the result can be `await()`ed until the receiving app either sends a matching MUPPET message in response, or the request times out.
+This method call is intended to imitate the standard `fetch()` Javascript API, where the result can be `await()`ed until the receiving app either sends a matching MUPPET event in response, or the request times out.
 
 Example:
 ```javascript
@@ -157,21 +258,6 @@ const channel = new WebRtcChannel(/* <params> */);
     <p>{phoneNumber}</p>
 </div>
 ```
-
-
-### Connect to other clients
-Your channel will not attempt to establish a connection to other WebRTC clients until you call the asynchronous `.connect()`.
-
-```javascript
-const channel = new WebRtcChannel(/* <params> */);
-await channel.connect();
-```
-
-It's recommended that you set up all event listeners (see "Receive messages" section above) before connecting, as events could begin to flow immediately after the WebRtcChannel connects successfully, and if your event listener is not setup beforehand you may miss those events. At this time there is no replay of messages.
-
-> Note: if you or another WebRTC client attempts to send events over a channel before a 2nd client is connected, the messages will be temporarily held in an in-memory queue in the sender's app (will not disappear).
->
-> As soon as both apps have connected to the same WebRtcChannel, all of these pending messages will be "replayed"--sent over the channel--so the receiver can receive them.
 
 ## Contributing
 
