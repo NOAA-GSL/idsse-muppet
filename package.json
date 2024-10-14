@@ -15,5 +15,15 @@
     "events"
   ],
   "author": "IDSSe",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@thumbmarkjs/thumbmarkjs": "^0.16.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "socket.io-client": "^4.8.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "eslint": "^9.12.0"
+  }
 }
