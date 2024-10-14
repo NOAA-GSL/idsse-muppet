@@ -1,0 +1,19 @@
+{
+  "name": "idsse-muppet-client",
+  "version": "0.0.1",
+  "description": "Connect to, send, and receive data over WebRTC data channels in convenient, modern interfaces using the MUPPETs protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "idsse",
+    "engine",
+    "decision support",
+    "nws connect",
+    "webrtc",
+    "events"
+  ],
+  "author": "IDSSe",
+  "license": "Apache-2.0"
+}
