@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { io } from 'socket.io-client';
-import { subscribeToTimeout } from './utils';
+import { subscribeToTimeout } from '../utils/utils';
 
 // ICE servers used to discover another websocket client and negotiate connection
 const CONFIGURATION = {
@@ -22,6 +22,9 @@ class WebRtcChannel {
 
   // internal mapping of pending request messages (IDs) to their callback when response arrives
   #requests = {};
+
+  // queue of messages stashed if client attempted to send before dataChannel was ready
+  #queuedMessages = [];
 
   /**
    * @type {Object.<string, function[]>}
@@ -60,7 +63,7 @@ class WebRtcChannel {
    *  with string representation of socket state (e.g. 'ready') anytime connection changes.
    *  Can also use ```WebRtcConnection.isOpen()``` to determine state of this connection instead.
    */
-  constructor({ clientName, serverUrl, serverPath, room = null, onStateChange = () => {} }) {
+  constructor({ clientName, serverUrl, serverPath = '/', room = null, onStateChange = () => {} }) {
     this.#clientName = clientName;
     this.room = room;
     this.#serverUrl = serverUrl;
@@ -97,7 +100,7 @@ class WebRtcChannel {
    *
    * @returns the websocket, which may be null before connection is completed
    */
-  connect = async () => {
+  connect = () => {
     const onIceCandidateFunc = (event) => {
       if (event.candidate) {
         this.#socket.emit('candidate', event.candidate, this.room);
@@ -108,18 +111,36 @@ class WebRtcChannel {
       const newState = this.#dataChannel ? this.#dataChannel.readyState : 'closed';
       this.state = newState;
       this.#onStateChange(newState);
+
+      // if channel just opened, deliver any messages already queued
+      if (newState === 'open' && this.#queuedMessages.length > 0) {
+        console.debug(
+          `[${this.#clientName}] [${this.room}] channel now open, sending`,
+          `${this.#queuedMessages.length} queued messages`,
+        );
+        this.#queuedMessages.forEach((message) => {
+          console.debug(
+            `[${this.#clientName}] [${this.room}] sending data: ${JSON.stringify(message)}`,
+          );
+          try {
+            this.sendRawData(message);
+          } catch (error) {
+            console.warn(`[${this.#clientName}] [${this.room}] Failed to send message:`, error);
+          }
+        });
+        console.debug(`[${this.#clientName}] [${this.room}] clearing all queued messages`);
+        this.#queuedMessages = []; // clear queue now that messages processed
+      }
     };
 
     const onReceiveMessage = (message) => {
-      console.debug(`[${this.#clientName}] [${this.room}] got message:`, message);
       const evt = JSON.parse(message.data);
+      console.debug(`[${this.#clientName}] [${this.room}] got message:`, evt);
 
       if (evt.requestId && evt.requestId in this.#requests) {
         // this message should be routed as a response message, not a regular event
         console.debug(
-          `[${this.#clientName}] [${
-            this.room
-          }] Received messsage with requestId ${evt.requestId}. this.requests:`,
+          `[${this.#clientName}] [${this.room}] Received messsage with requestId ${evt.requestId}. this.requests:`,
           this.#requests,
         );
         const requestPromise = this.#requests[evt.requestId];
@@ -155,9 +176,7 @@ class WebRtcChannel {
 
     this.#socket.on('connect', () => {
       console.log(
-        `[${this.#clientName}] [${
-          this.room
-        }] Connected to Websocket server, socket id: ${this.#socket.id}`,
+        `[${this.#clientName}] [${this.room}] Connected to Websocket server, socket id: ${this.#socket.id}`,
       );
       this.#socket.emit('join', this.room);
     });
@@ -187,9 +206,7 @@ class WebRtcChannel {
       this.#peerConnection = new RTCPeerConnection(CONFIGURATION);
 
       console.debug(
-        `[${this.#clientName}] [${this.room}] [ready] created new peerConnection: ${JSON.stringify(
-          this.#peerConnection,
-        )}`,
+        `[${this.#clientName}] [${this.room}] [ready] created new peerConnection: ${JSON.stringify(this.#peerConnection)}`,
       );
       const channel = this.#peerConnection.createDataChannel('sendDataChannel');
       receiveChannelCallback({ channel });
@@ -208,18 +225,12 @@ class WebRtcChannel {
 
     this.#socket.on('candidate', async (candidate) => {
       console.debug(
-        `[${this.#clientName}] [${
-          this.room
-        }] [candidate] Received new candidate: ${JSON.stringify(candidate)}`,
+        `[${this.#clientName}] [${this.room}] [candidate] Received new candidate: ${JSON.stringify(candidate)}`,
       );
       const iceCandidate = new RTCIceCandidate(candidate);
       try {
         console.debug(
-          `[${this.#clientName}] [${
-            this.room
-          }] [candidate] Attempting to addIceCandidate to connection: ${JSON.stringify(
-            this.#peerConnection,
-          )}`,
+          `[${this.#clientName}] [${this.room}] [candidate] Attempting to addIceCandidate to connection: ${JSON.stringify(this.#peerConnection)}`,
         );
         await this.#peerConnection.addIceCandidate(iceCandidate);
       } catch (error) {
@@ -239,9 +250,7 @@ class WebRtcChannel {
       // give the iceServer details as the argument
       this.#peerConnection = new RTCPeerConnection(CONFIGURATION);
       console.debug(
-        `[${this.#clientName}] [${this.room}] [offer] Created new peerConnection ${JSON.stringify(
-          this.#peerConnection,
-        )}`,
+        `[${this.#clientName}] [${this.room}] [offer] Created new peerConnection ${JSON.stringify(this.#peerConnection)}`,
       );
 
       // this receives messages via the data channel
@@ -273,6 +282,11 @@ class WebRtcChannel {
       }
     });
 
+    this.#socket.on('disconnected', () => {
+      console.log(`[${this.#clientName}] [${this.room}] [disconnect] Received disconnect`);
+      this.close();
+    });
+
     return this.#socket;
   };
 
@@ -288,6 +302,7 @@ class WebRtcChannel {
     );
     if (!this.isOpen()) {
       console.warn(`[${this.#clientName}] [${this.room}] Channel not ready to receive data`);
+      this.#queuedMessages.push(data); // stash this message until channel opens (hopefully)
       return false;
     }
 
