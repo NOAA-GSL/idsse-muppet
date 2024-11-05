@@ -1,3 +1,5 @@
+import { getDeviceFingerprint } from '../utils/utils';
+
 /**
  * Get the shared, unique SESSION_ID, which any app in this browser window can use to connect
  * to the current WebRTC "room" and share MUPPET events with each other.
@@ -56,8 +58,37 @@ const getSessionId = (clientName) => {
   return null; // both places were empty
 };
 
+/**
+ * Get the MUPPET sessionId to be used by this device, from one of the following (attempted in order):
+ * 1. URL query params
+ * 2. Browser sessionStorage (like localStorage, but purges on window close)
+ * 3. Unique device "fingerprint"
+ *
+ * The resulting sessionId will be persisted in browser sessionStorage before returning.
+ *
+ * @returns {Promise<string>} sessionId
+ */
+const getAndSaveSessionId = async (clientName) => {
+  // first try to get sessionId from URL parameters or sessionStorage.
+  // If not present, fallback to unique device fingerprint
+  let sessionId = getSessionId(clientName);
+  console.debug(
+    `[${clientName}] on page: ${window.location.href}, extracted URL query params: ${window.location.search}`,
+  );
+  if (!sessionId) {
+    console.debug(
+      `[${clientName}] sessionId null or not found, using unique device fingerprint instead`,
+    );
+    sessionId = await getDeviceFingerprint();
+    console.debug(`[${clientName}] [createWebRtcChannels] got device Id:`, sessionId);
+  }
+  setSessionInStorage(sessionId); // save sessionId in localStorage, then return to requester
+  return sessionId;
+};
+
 export {
   getSessionId,
   clearSessionFromStorage as clearSessionId,
   setSessionInStorage as setSessionId,
+  getAndSaveSessionId,
 };
