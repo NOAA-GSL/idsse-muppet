@@ -23,26 +23,6 @@ const getDeviceFingerprint = async () => {
 };
 
 /**
- * Simple locking mechanism to simulate multiple threads/components accessing a shared variable.
- */
-const createLock = () => {
-  // TODO: this is no longer needed
-  let isLocked = false;
-  const release = () => {
-    isLocked = false;
-  };
-  const acquire = () => {
-    if (isLocked) {
-      return false;
-    }
-    isLocked = true;
-    return true;
-  };
-
-  return { isLocked, acquire, release };
-};
-
-/**
  *
  * @param {Promise} promise A Promise of unknown state
  * @returns True if Promise has already been resolved or rejected, False if 'pending'
@@ -77,4 +57,4 @@ const subscribeToTimeout = (promise, milliseconds, callback) =>
     }, milliseconds);
   });
 
-export { sleep, createLock, subscribeToTimeout, getDeviceFingerprint };
+export { sleep, subscribeToTimeout, getDeviceFingerprint };
