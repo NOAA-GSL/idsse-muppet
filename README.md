@@ -1,11 +1,13 @@
-[![Publish to GitHub Packages](https://github.com/NOAA-GSL/idsse-muppet-client/actions/workflows/publish-package.yml/badge.svg?event=release)](https://github.com/NOAA-GSL/idsse-muppet-client/actions/workflows/publish-package.yml)
+[![Publish to GitHub Packages](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/publish-package.yml/badge.svg?event=release)](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/publish-package.yml)
 
-# IDSSe MUPPET Client
+# IDSSe MUPPET Library
 
-React Javascript library to connect to MUPPET data channels, and send/receive messages in simple interfaces using the [MUPPETs protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing).
+**M**odern **U**I **P**eer-to-**P**eer **E**ven**t** (MUPPETs)
+
+This is a React Javascript library for two or more React apps to connect to MUPPET data channels (WebRTC under the hood), then use simple, React-like interfaces to forward each other UI events from their app (like user clicks, selections, or input) via the [MUPPETs protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing).
 
 ## Table of Contents
-- [IDSSe MUPPET Client](#idsse-muppet-client)
+- [IDSSe MUPPET Library](#idsse-muppet-library)
   - [Table of Contents](#table-of-contents)
   - [Usage](#usage)
     - [Log into GitHub's Package repo](#log-into-githubs-package-repo)
@@ -47,10 +49,10 @@ If it prints your GitHub account name, you're good to go. If it throws a `401` o
 ### Install the library
 
 ```sh
-npm install @noaa-gsl/idsse-muppet-client
+npm install @noaa-gsl/idsse-muppet
 ```
 
-Now you can use the IDSSe MUPPET library to create new connections to a MUPPET channel and send/receive events over it in your React application.
+Now you can use the MUPPET library to create new connections to a MUPPET channel and send/receive events over it in your React application.
 
 ### Initialize a new MUPPET channel
 
@@ -60,7 +62,7 @@ First, in your `main.jsx` file, add a `<MuppetProivder>` component wrapping your
 ```javascript
 // main.jsx
 import ReactDOM from 'react-dom/client';
-import { MuppetProvider } from '@noaa-gsl/idsse-muppet-client';
+import { MuppetProvider } from '@noaa-gsl/idsse-muppet';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -81,7 +83,7 @@ This Provider now stores an app-wide React Context for you, so any components in
 
 ```javascript
 // MyComponent.jsx
-import { useMuppetChannel } from '@noaa-gsl/idsse-muppet-client';
+import { useMuppetChannel } from '@noaa-gsl/idsse-muppet';
 
 function MyComponent () {
   const channel = useMuppetChannel('my-channel');
@@ -171,7 +173,7 @@ If you created a React `MuppetProvider` from above, you already passed `channels
 
 ```javascript
 // MyComponent.jsx
-import { useMuppetCallback } from '@noaa-gsl/idsse-muppet-client';
+import { useMuppetCallback } from '@noaa-gsl/idsse-muppet';
 
 function MyComponent () {
   const [currentColor, setCurrentColor] = useState(null);
@@ -281,9 +283,9 @@ If you have changes you wish to be incorporated into the main branch, feel free 
 
 To publish a new version of this package:
 
-1. In the [package.json](https://github.com/NOAA-GSL/idsse-muppet-client/blob/main/package.json) file, increase the `version` number (either the patch or minor number are usually fine).
+1. In the [package.json](https://github.com/NOAA-GSL/idsse-muppet/blob/main/package.json) file, increase the `version` number (either the patch or minor number are usually fine).
    1. This step is needed so NPM recognizes it as a new version for any repos that install it with `npm install`. If you don't do this, NPM will reject the publish due to a conflict with the last version, and the publish GitHub Action will fail.
-2. Go to the [Releases](https://github.com/NOAA-GSL/idsse-muppet-client/releases) page on the GitHub repository and click "Draft a new release"
+2. Go to the [Releases](https://github.com/NOAA-GSL/idsse-muppet/releases) page on the GitHub repository and click "Draft a new release"
    1. Releases should be shown in a sidebar on the right of the `Code` page on GitHub.
 3. Click the "Choose a tag" dropdown, then start typing a new version number in the text box
    1. This should start with "v", then the same version that you set in the `package.json` file in step 1.
@@ -291,9 +293,9 @@ To publish a new version of this package:
    3. Type a bullet point or two about what was changed, or click "Generate release notes" which just links to a diff between this version and the last.
 4. Make sure "Set as pre-release" is _not_ checked
    1. This will ensure that projects using this library will download your new version the next time they run `npm install`.
-   1. If "pre-release" is checked, it would still publish to NPM but not upgrade by default. Users of the library would have to "opt in" to this latest version by installing it explicitly, e.g. `npm install @noaa-gsl/idsse-muppet-client@v1.2.3-beta`
+   2. If "pre-release" is checked, it would still publish to NPM but not upgrade by default. Users of the library would have to "opt in" to this latest version by installing it explicitly, e.g. `npm install @noaa-gsl/idsse-muppet@v1.2.3-beta`
 5. Click "Publish release"
 
-That's it! A GitHub Action will be kicked off to auto-publish the new version to NPM. You can watch the status [on the Actions tab of GitHub](https://github.com/NOAA-GSL/idsse-muppet-client/actions).
+That's it! A GitHub Action will be kicked off to auto-publish the new version to NPM. You can watch the status [on the Actions tab of GitHub](https://github.com/NOAA-GSL/idsse-muppet/actions).
 
-Once that finishes, projects that use this library can run `npm install`, and NPM will upgrade them to the new version of this library in their project (in their package.json, or by running `npm ls | grep idsse-muppet-client-client`).
+Once that finishes, projects that use this library can run `npm install`, and NPM will upgrade them to the new version of this library in their project (in their package.json, or by running `npm ls | grep idsse-muppet`).
