@@ -80,7 +80,7 @@ const getAndSaveSessionId = async (clientName) => {
       `[${clientName}] sessionId null or not found, using unique device fingerprint instead`,
     );
     sessionId = await getDeviceFingerprint();
-    console.debug(`[${clientName}] [createWebRtcChannels] got device Id:`, sessionId);
+    console.debug(`[${clientName}] got device fingerprint:`, sessionId);
   }
   setSessionInStorage(sessionId); // save sessionId in localStorage, then return to requester
   return sessionId;

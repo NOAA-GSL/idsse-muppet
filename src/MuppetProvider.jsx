@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from 'react';
 
-import WebRtcChannel from './WebRtcChannel';
+import MuppetChannel from './MuppetChannel';
 import { getAndSaveSessionId } from './session';
 
 const MuppetContext = createContext(null);
@@ -54,9 +54,9 @@ function MuppetProvider({
 
     const channelMap = {};
     channels.forEach((channelName) => {
-      // for each channelName, map its room name to a new WebRtcChannel and initiate a connection
+      // for each channelName, map its room name to a new MuppetChannel and initiate a connection
       try {
-        channelMap[channelName] = new WebRtcChannel({
+        channelMap[channelName] = new MuppetChannel({
           clientName,
           room: `${sessionId}:${channelName}`,
           serverUrl,
@@ -64,7 +64,7 @@ function MuppetProvider({
         });
         channelMap[channelName].connect();
       } catch (err) {
-        console.error('Failed to connect to WebRtcChannel', channelName, err);
+        console.error('Failed to connect to MuppetChannel', channelName, err);
         channelMap[channelName] = null;
       }
     });

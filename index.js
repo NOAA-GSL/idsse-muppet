@@ -1,15 +1,16 @@
-import WebRtcChannel from './src/WebRtcChannel';
-import { WebRtcProvider } from './src/WebRtcProvider';
-import { createWebRtcChannels, getChannel, getChannels } from './src/channels';
-import useMuppetChannel from './src/useMuppetChannel';
-import useMuppetChannels from './src/useMuppetChannels';
+import MuppetChannel from './src/MuppetChannel';
+import { MuppetProvider } from './src/MuppetProvider';
+import { getAndSaveSessionId, getSessionId } from './src/session';
+import useMuppetChannel from './src/hooks/useMuppetChannel';
+import useMuppetChannels from './src/hooks/useMuppetChannels';
+import useMuppetCallback from './src/hooks/useMuppetCallback';
 
 export {
-  WebRtcChannel,
-  WebRtcProvider,
-  createWebRtcChannels,
-  getChannel,
-  getChannels,
+  MuppetChannel,
+  MuppetProvider,
+  getSessionId,
+  getAndSaveSessionId,
   useMuppetChannel,
   useMuppetChannels,
+  useMuppetCallback,
 };

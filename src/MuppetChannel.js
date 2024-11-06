@@ -10,7 +10,7 @@ const CONFIGURATION = {
   ],
 };
 
-class WebRtcChannel {
+class MuppetChannel {
   #peerConnection = null;
 
   #dataChannel = null;
@@ -50,18 +50,19 @@ class WebRtcChannel {
   #onStateChange;
 
   /**
-   * Create instance of new WebRTC channel
+   * Create instance of new MUPPET channel
    *
    * @param {Object} props
-   * @param {string} props.clientName the client name to attach to any WebRTC activity, messages, or logs.
-   * @param {string} props.room the WebRTC room name where websocket connection will attempt to be negotiated
-   *    with any other waiting clients. Must be non-null.
+   * @param {string} props.clientName the client name to attach to any MUPPET activity, messages, or logs.
+   * @param {string} props.room the room name on the WebRTC signaling server where a websocket
+   *  connection will attempt to be negotiated with any other waiting clients. Must be non-null.
    * @param {string} props.serverUrl the HTTP endpoint of the WebRTC signaling server to use
-   *  to negotiate WebRTC connections to other apps in the app suite.
-   * @param {string} props.serverPath the path to append to the end of serverUrl (e.g. "/socket.io")
+   *  to negotiate websocket connections to other MUPPET clients.
+   * @param {string} props.serverPath the path to append to the end of serverUrl (e.g. "/socket.io").
+   *  Default is "/".
    * @param {(string) => {}} props.onStateChange (optional) callback that will be invoked
    *  with string representation of socket state (e.g. 'ready') anytime connection changes.
-   *  Can also use ```WebRtcConnection.isOpen()``` to determine state of this connection instead.
+   *  Can also use ```MuppetChannel.isOpen()``` to determine state of this connection instead.
    */
   constructor({ clientName, serverUrl, serverPath = '/', room = null, onStateChange = () => {} }) {
     this.#clientName = clientName;
@@ -80,7 +81,7 @@ class WebRtcChannel {
 
   /**
    * Add a message listener mapping a given eventClass to a callback.
-   * Callback will be invoked with the message body whenever this WebRtcChannel receives
+   * Callback will be invoked with the message body whenever this MuppetChannel receives
    * a message of the specified eventClass.
    *
    * @param {string} eventClass the event class on which this listener will be invoked
@@ -291,7 +292,7 @@ class WebRtcChannel {
   };
 
   /**
-   * Send raw JSON data through this WebRTC channel, if it is open.
+   * Send raw JSON data through this MUPPET channel, if it is open.
    * @param {object} data
    * @returns True if message sent successfully
    */
@@ -352,7 +353,7 @@ class WebRtcChannel {
   };
 
   /**
-   * Send message via WebRtcChannel and await the response message from the receiving client.
+   * Send message via MuppetChannel and await the response message from the receiving client.
    *
    * @param {string} eventClass the message event class name, e.g. "BUTTON_CLICKED"
    * @param {object} event the full MUPPET event object
@@ -391,6 +392,10 @@ class WebRtcChannel {
     return Promise.race([requestPromise, timeoutPromise]);
   };
 
+  /**
+   * Gracefully terminate the underlying websocket connection with any other MUPPET clients,
+   * and unsubscribe from all event listeners.
+   */
   close = () => {
     if (this.#dataChannel === null && this.#peerConnection === null) {
       console.warn(`[${this.#clientName}] [${this.room}] No connection to close`);
@@ -405,4 +410,4 @@ class WebRtcChannel {
   };
 }
 
-export default WebRtcChannel;
+export default MuppetChannel;

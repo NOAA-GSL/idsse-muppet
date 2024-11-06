@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import useMuppetChannel from './useMuppetChannel';
 // eslint-disable-next-line no-unused-vars
-import WebRtcChannel from '../muppet/WebRtcChannel';
+import MuppetChannel from '../MuppetChannel';
 
 /**
  * @typedef {Object} muppetEvent
@@ -23,7 +23,7 @@ import WebRtcChannel from '../muppet/WebRtcChannel';
 
 /**
  * @callback muppetCallback
- * @param {WebRtcChannel} channel The MUPPET channel object over which the event was received.
+ * @param {MuppetChannel} channel The MUPPET channel object over which the event was received.
  * @param {muppetEvent} event The MUPPET event that was received.
  */
 

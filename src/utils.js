@@ -21,10 +21,12 @@ const getDeviceFingerprint = async () => {
   ThumbmarkJS.setOption('exclude', ['screen', 'permissions', 'system.cookieEnabled']);
   return ThumbmarkJS.getFingerprint();
 };
+
 /**
  * Simple locking mechanism to simulate multiple threads/components accessing a shared variable.
  */
 const createLock = () => {
+  // TODO: this is no longer needed
   let isLocked = false;
   const release = () => {
     isLocked = false;

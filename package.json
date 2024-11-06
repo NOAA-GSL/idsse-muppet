@@ -1,7 +1,7 @@
 {
   "name": "idsse-muppet-client",
   "version": "0.0.1",
-  "description": "Connect to, send, and receive data over WebRTC data channels in convenient, modern interfaces using the MUPPETs protocol",
+  "description": "Connect to, send, and receive data over MUPPET data channels in convenient, modern interfaces using the MUPPETs protocol",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,12 +18,11 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@thumbmarkjs/thumbmarkjs": "^0.16.0",
-    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
-    "prettier": "^3.3.3",
-    "eslint": "^9.12.0"
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3"
   }
 }
