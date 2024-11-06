@@ -167,9 +167,32 @@ It's recommended that you set up all event listeners (see "Receive events" secti
 Since WebRTC itself has no rules or conventions on how data sent over channels should be organized, the [Modern UI Peer-to-Peer Events (MUPPET) protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing) defines a consistent JSON structure for messaging, so you can effectively share your Javascript app's user events over WebRTC with another app.
 
 #### Receive events
-If you created a React `MuppetProvider` from above, you already passed `channels` to it
+If you created a React `MuppetProvider` from above, you already passed `channels` to it, so the Provider allows any component in your React app tree to access to the connected `MuppetChannel` instances for those channel names. Use the Hook `useMuppetCallback` similar to how you might wire up a callback function to a given React state change using `useEffect()`.
 
-If you manually instantiated a new `MuppetChannel` (not using `MuppetProvider`), you have to manually wire up event listeners to callbacks using `MuppetChannel.on()`:
+```javascript
+// MyComponent.jsx
+import { useMuppetCallback } from '@noaa-gsl/idsse-muppet-client';
+
+function MyComponent () {
+  const [currentColor, setCurrentColor] = useState(null);
+
+  useMuppetCallback('my-channel', (channel, msg) => {
+    console.log('User picked a new color in OTHER_APP': msg);
+    setCurrentColor(msg.event.color)
+  }, [`OTHER_APP.COLOR_SELECTED.*`]);
+
+  return (
+    <div>
+    <p>Your favorite color:</p>
+    <p>{currentColor}
+    </div>
+  );
+}
+```
+
+This example `useMuppetCallback` expects another MUPPET client (identified by the app name "OTHER_APP") to connect to a MUPPET channel/room named "my-channel" and send our app messages of `eventClass` `OTHER_APP.COLOR_SELECTED`, with a payload structured like `{ "color": "green" }`.
+
+If you manually instantiated a new `MuppetChannel` (not using `MuppetProvider` and React Hooks), you have to manually wire up event listeners to callbacks using `MuppetChannel.on()`:
 ```javascript
 channel.on('THEIR_APP.WEATHER_FIELD_CHANGED.*', (receivingChannel, evt) => {
     // the attributes inside the event are completely up to the sender;
@@ -189,7 +212,10 @@ This can (and generally should) be invoked right in the HTML/Javascript element 
 
 Example:
 ```javascript
-const channel = new MuppetChannel(/* <params> */);
+// React syntax shown.
+// Vanilla JS would work the same, but this line would look
+// more like `new MuppetChannel({ <...params> })`
+const channel = useMuppetChannel('my-channel')
 
 <button
   onClick={() => {
@@ -216,7 +242,6 @@ Example:
 import { useState } from 'react';
 
 const [phoneNumber, setPhoneNumber] = useState('');
-// const channel = new MuppetChannel(/* <params> */);
 const channel = useMuppetChannel('my-channel');
 
 <div>
@@ -230,7 +255,7 @@ const channel = useMuppetChannel('my-channel');
                 });
                 setPhoneNumber(res.event.phoneNumber);
             } catch (err) {
-                console.error('Failed to get phone number from THEIR_APP');
+                console.warning('Failed to get phone number from THEIR_APP');
                 setPhoneNumber('ERR');
             }
         }
