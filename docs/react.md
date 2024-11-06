@@ -11,7 +11,7 @@
 
 ## Initialize a new MUPPET channel
 
-First, in your `main.jsx` file, add a `<MuppetProivder>` component wrapping your main React app component. Pass the Provider a string array `channelNames`, which is a list of WebRTC rooms on the server you wish to connect to.
+First, in your `main.jsx` file, add a `<MuppetProvider>` component wrapping your main React app component. Pass the Provider a string array `channelNames`, which is a list of WebRTC rooms on the server you wish to connect to.
 
 ```javascript
 // main.jsx
