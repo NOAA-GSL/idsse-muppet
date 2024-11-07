@@ -21,10 +21,10 @@ jobs:
       # Note that the secrets.GHCR_PAT is a GitHub Personal Access Token and is defined
       # in the idsse-muppet's repository's secrets settings
       # - name: Create .npmrc file
-        # run: |
-            # echo 'registry=https://registry.npmjs.org/' > .npmrc
-            # echo '@noaa-gsl:registry=https://npm.pkg.github.com/' >> .npmrc
-            # echo "//npm.pkg.github.com/:_authToken=${{ secrets.GHCR_PAT }}" >> .npmrc
+      #   run: |
+      #       echo 'registry=https://registry.npmjs.org/' > .npmrc
+      #       echo '@noaa-gsl:registry=https://npm.pkg.github.com/' >> .npmrc
+      #       echo "//npm.pkg.github.com/:_authToken=${{ secrets.GHCR_PAT }}" >> .npmrc
 
       - name: Install node
         uses: actions/setup-node@v4
@@ -36,8 +36,8 @@ jobs:
           # cache: 'npm'
           # cache-dependency-path: ./package-lock.json
 
-      - name: Check GitHub login status
-        run: npm whoami --registry=https://npm.pkg.github.com
+      # - name: Check GitHub login status
+      #   run: npm whoami --registry=https://npm.pkg.github.com
 
       - name: Install npm dependencies
         run: npm ci
