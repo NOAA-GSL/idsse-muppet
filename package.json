@@ -1,5 +1,5 @@
 {
-  "name": "idsse-muppet",
+  "name": "@noaa-gsl/idsse-muppet",
   "version": "0.0.2",
   "description": "Connect to, send, and receive data over MUPPET data channels in convenient React interfaces using the MUPPETs protocol",
   "main": "index.js",
@@ -18,7 +18,10 @@
     "type": "git",
     "url": "git+https://github.com/NOAA-GSL/idsse-muppet.git"
   },
-  "author": "IDSSe",
+  "publishConfig": {
+    "registry": "https://pkg.npm.github.com"
+  },
+  "author": "NOAA Global Systems Laboratory",
   "license": "Apache-2.0",
   "dependencies": {
     "@thumbmarkjs/thumbmarkjs": "^0.16.0",
