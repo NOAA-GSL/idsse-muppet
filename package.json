@@ -1,6 +1,6 @@
 {
   "name": "@noaa-gsl/idsse-muppet",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Connect to, send, and receive data over MUPPET data channels in convenient React interfaces using the MUPPETs protocol",
   "main": "index.js",
   "scripts": {
