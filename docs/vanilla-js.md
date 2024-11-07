@@ -5,10 +5,10 @@ Although it's not recommended for apps written in React, you can create a Muppet
 Example:
 ```javascript
 const channel = new MuppetChannel({
-    clientName: 'MY_APP',
-    room: 'some-room-on-the-server',
-    serverUrl: 'http://example.com',
-    serverPath: '/',
+    clientName: "MY_APP",
+    room: "some-room-on-the-server",
+    serverUrl: "http://example.com",
+    serverPath: "/",
 });
 ```
 
@@ -16,7 +16,7 @@ Once you instantiated a new `MuppetChannel`, you can use this channel connection
 
 Example:
 ```javascript
-channel.on('THEIR_APP.WEATHER_FIELD_CHANGED', (receivingChannel, evt) => {
+channel.on("THEIR_APP.WEATHER_FIELD_CHANGED", (receivingChannel, evt) => {
     // the attributes inside the event are completely up to the sender;
     // ideally this structure was declared in a SCHEMAS event prior
     const { field, issueDt } = evt;
@@ -38,7 +38,7 @@ You can inspect if your channel is live and receiving events from another client
 
 ```javascript
 if (channel.isOpen()) {
-  console.log('Ready to send messages over MUPPET!')
+  console.log("Ready to send messages over MUPPET!")
 }
 ```
 
