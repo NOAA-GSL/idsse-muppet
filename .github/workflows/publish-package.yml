@@ -18,6 +18,14 @@ jobs:
         uses: actions/checkout@v2
 
       # Setup .npmrc file to publish to GitHub Packages
+    # Note that the secrets.GHCR_PAT is a GitHub Personal Access Token and is defined
+    # in the idsse-muppet's repository's secrets settings
+      - name: Create .npmrc file
+        run: |
+            echo 'registry=https://registry.npmjs.org/' > .npmrc
+            echo '@noaa-gsl:registry=https://npm.pkg.github.com/' >> .npmrc
+            echo "//npm.pkg.github.com/:_authToken=${{ secrets.GHCR_PAT }}" >> .npmrc
+
       - name: Install node
         uses: actions/setup-node@v4
         with:
@@ -30,9 +38,6 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
-
-      # - name: Build vite library
-      #   run: npm run build
 
       - name: Publish npm package
         run: npm publish
