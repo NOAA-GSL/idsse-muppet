@@ -330,7 +330,9 @@ class MuppetChannel {
     id: crypto.randomUUID(),
     destination,
     requestId: requestId || undefined,
-    eventClass: `${this.#clientName}.${eventClass}`,
+    eventClass: eventClass.startsWith(`${this.#clientName}.`)
+      ? eventClass
+      : `${this.#clientName}.${eventClass}`,
     event,
   });
 

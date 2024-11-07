@@ -7,6 +7,7 @@
 This is a React Javascript library for two or more React apps to connect to MUPPET data channels (WebRTC/websockets under the hood), then use simple, React-like interfaces to forward each other serialized UI events from their app (like user clicks, selections, or input) via the [MUPPETs protocol](https://docs.google.com/document/d/1TSvRtfzQGdclHGys9e0dLXKNnvWAmRnizH-biQW066o/view?usp=sharing).
 
 ## Table of Contents
+
 - [IDSSe MUPPET Library](#idsse-muppet-library)
   - [Table of Contents](#table-of-contents)
   - [Usage](#usage)
@@ -49,7 +50,72 @@ npm install @noaa-gsl/idsse-muppet
 Now you can use the MUPPET library to create new connections to a MUPPET channel and send/receive events over it in your React application.
 
 ### Developer Guide
-For React apps, see the [Developer Guide - React](docs/react.md).
+
+To use MUPPET channels in your React app, first need to wrap your top-level React component in a `MuppetProvider`:
+
+```javascript
+// main.jsx
+import ReactDOM from "react-dom/client";
+import { MuppetProvider } from "@noaa-gsl/idsse-muppet";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <MuppetProvider
+    clientName="MY_APP"
+    serverUrl="http://example.com" // URL of WebRTC signaling server
+    serverPath="/"
+    channelNames={["my-channel"]}
+  >
+    <App>
+  </MuppetProvider>
+);
+```
+
+- `channelNames`: 1 or more WebRTC rooms on the WebRTC server that you wish to connect to. This will need to line up with the room(s) used by the app with which you want to send/receive messages.
+- `clientName`: how your app identifies itself to other apps using MUPPET. This will be prepended to the `eventClass` of every event you send. For example, other apps may subscribe to events from you with eventClass `MY_APP.SOME_BUTTON_CLICKED`, or if they want to send an RPC type message to your app specifically, they would use this clientName string to address the message.
+
+With that Provider in place, now any components in your React component tree have access to shared, persistent `MuppetChannel` instances. You can fetch this channel and use it directly in your React component:
+
+```javascript
+// MyComponent.jsx
+import { useState } from 'react';
+import { useMuppetChannel, useMuppetCallback } from '@noaa-gsl/idsse-muppet';
+
+function MyComponent() {
+  // track user's favorite color from other app
+  const [currentColor, setCurrentColor] = useState('');
+
+  const channel = useMuppetChannel('my-channel');
+
+  useMuppetCallback(
+    'my-channel',
+    (channel, evt) => {
+      console.log('Received new color selection from OTHER_APP:', evt);
+      setCurrentColor(event.color);
+    },
+    ['OTHER_APP.COLOR_SELECTED'],
+  );
+
+  const onButtonClick = () => {
+    channel?.sendEvent({
+      eventClass: 'BUTTON_CLICKED',
+      event: { value: 123 },
+    });
+  };
+
+  return (
+    <div>
+      <button onClick={onButtonClick}>Hello world</button>
+      <p>Favorite color:</p>
+      <p>{currentColor}</p>
+    </div>
+  );
+}
+
+export default MyComponent;
+```
+
+For more details, see the [Developer Guide - React](docs/react.md).
 
 Although it's not recommended because it can be much harder to manage app state, if you want to use the underlying JS without the niceties of React Context or custom Hooks, see [Developer Guide - Vanilla JS](docs/vanilla-js.md)
 
