@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { MuppetContext } from '../muppet/MuppetProvider';
+import { MuppetContext } from '../MuppetProvider';
 // eslint-disable-next-line no-unused-vars
 import MuppetChannel from '../MuppetChannel';
 

@@ -1,4 +1,4 @@
-import { getDeviceFingerprint } from '../utils/utils';
+import { getDeviceFingerprint } from './utils';
 
 /**
  * Get the shared, unique SESSION_ID, which any app in this browser window can use to connect
