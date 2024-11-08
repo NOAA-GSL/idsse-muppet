@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { io } from 'socket.io-client';
-import { subscribeToTimeout } from '../utils/utils';
+import { subscribeToTimeout } from './utils';
 
 // ICE servers used to discover another websocket client and negotiate connection
 const CONFIGURATION = {
