@@ -1,5 +1,6 @@
 ### Checklist
 - [ ] Version number incremented in `package.json`
+- [ ] Unit tests are passing
 
 ### Changes
 <!-- Brief description of changes -->
