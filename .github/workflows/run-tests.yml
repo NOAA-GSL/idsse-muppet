@@ -14,12 +14,13 @@ jobs:
       matrix:
         app:
           - dev
+    permissions:
+      contents: read
+      packages: write
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-      with:
-        repository: NOAA-GSL/idsse-muppet
-        ref: dev
 
     # setting up node.js
     - name: Set up Node.js
