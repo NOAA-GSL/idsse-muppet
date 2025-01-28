@@ -1,3 +1,14 @@
+/* --------------------------------------------------------------------------------
+ * Created on Wed Oct 16 2024
+ *
+ * Copyright (c) 2024 Colorado State University. All rights reserved. (1)
+ *
+ * Contributors:
+ *     Mackenzie Grimes (1)
+ *
+ * --------------------------------------------------------------------------------
+ */
+
 import { getDeviceFingerprint } from './utils';
 
 /**

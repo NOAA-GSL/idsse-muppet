@@ -1,3 +1,14 @@
+/* --------------------------------------------------------------------------------
+ * Created on Fri Jan 24 2025
+ *
+ * Copyright (c) 2025 Colorado State University. All rights reserved. (1)
+ *
+ * Contributors:
+ *     Mackenzie Grimes (1)
+ *
+ * --------------------------------------------------------------------------------
+ */
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { getSessionId, setSessionId, clearSessionId } from './session';
 

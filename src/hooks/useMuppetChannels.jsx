@@ -1,3 +1,14 @@
+/* --------------------------------------------------------------------------------
+ * Created on Wed Nov 6 2024
+ *
+ * Copyright (c) 2024 Colorado State University. All rights reserved. (1)
+ *
+ * Contributors:
+ *     Mackenzie Grimes (1)
+ *
+ * --------------------------------------------------------------------------------
+ */
+
 import { useContext } from 'react';
 
 import { MuppetContext } from '../MuppetProvider';
