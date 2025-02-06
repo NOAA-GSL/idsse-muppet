@@ -1,4 +1,5 @@
 [![Publish to GitHub Packages](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/publish-package.yml/badge.svg?event=release)](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/publish-package.yml)
+[![Jest tests](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/run-tests.yml/badge.svg?branch=main)](https://github.com/NOAA-GSL/idsse-muppet/actions/workflows/run-tests.yml)
 
 # IDSSe MUPPET Library
 
