@@ -319,7 +319,7 @@ class MuppetChannel {
 
       // de-duplicate queue, so recipient app won't try to process successive state changes when it comes online
       this.#queuedMessages = this.#queuedMessages.filter(
-        (it) => it.eventClass !== data.eventClass && it.destination !== it.destination,
+        (it) => !(it.eventClass === data.eventClass && it.destination === it.destination),
       );
       this.#queuedMessages.push(data); // stash this message until channel opens (hopefully)
       return false;
