@@ -313,7 +313,14 @@ class MuppetChannel {
       this.#dataChannel,
     );
     if (!this.isOpen()) {
-      console.warn(`[${this.#clientName}] [${this.room}] Channel not ready to receive data`);
+      console.warn(
+        `[${this.#clientName}] [${this.room}] Channel not ready to receive data. Message queued`,
+      );
+
+      // de-duplicate queue, so recipient app won't try to process successive state changes when it comes online
+      this.#queuedMessages = this.#queuedMessages.filter(
+        (it) => it.eventClass !== data.eventClass && it.destination !== it.destination,
+      );
       this.#queuedMessages.push(data); // stash this message until channel opens (hopefully)
       return false;
     }
@@ -337,7 +344,7 @@ class MuppetChannel {
    * @param {string} requestId (optional) the UUID of the original message that this message is responding to.
    * @returns {object} the message, ready to be sent over WebRTC
    */
-  #createMuppetMessage = (eventClass, event, destination, requestId = null) => ({
+  buildMuppetMessage = (eventClass, event, destination, requestId = null) => ({
     id: crypto.randomUUID(),
     destination,
     requestId: requestId || undefined,
@@ -357,11 +364,11 @@ class MuppetChannel {
    * @returns {boolean} True if message sent successfully.
    */
   sendEvent = ({ eventClass, event = {}, destination = '*', requestId = null }) => {
-    console.log(
+    console.debug(
       `[${this.#clientName}] [${this.room}] Sending MUPPET event ${eventClass} with body`,
       event,
     );
-    const data = this.#createMuppetMessage(eventClass, event, destination, requestId);
+    const data = this.buildMuppetMessage(eventClass, event, destination, requestId);
     return this.sendRawData(data);
   };
 
@@ -383,7 +390,7 @@ class MuppetChannel {
       requestReject = reject;
     });
 
-    const message = this.#createMuppetMessage(eventClass, event, destination);
+    const message = this.buildMuppetMessage(eventClass, event, destination);
     // track this message as expecting a response, saving the resolve() to be invoked by onReceiveMessage
     this.#requests[message.id] = { callback: requestResolve };
 

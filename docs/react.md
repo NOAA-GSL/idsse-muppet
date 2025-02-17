@@ -60,7 +60,7 @@ if (channel.isOpen()) {
 
 > Note: if you or another MUPPET client attempts to send events over a channel before a receiving client is connected, the events will be temporarily held in an in-memory queue in the sender's app (will not disappear).
 >
-> As soon as both apps have connected to the same MuppetChannel, all of these pending events will be "replayed"--sent over the channel--so the receiver can receive them.
+> As soon as both apps have connected to the same MuppetChannel, all of these pending events will be "replayed"--sent over the channel--so the receiver can receive them. Any queued messages with the same `destination` and `eventClass` will be de-duplicated--using only the latest one--to avoid jittery behavior in the receiver when it comes online.
 
 ## Hooks
 
